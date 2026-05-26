@@ -1,0 +1,6 @@
+{
+  "name": "Employee Entry Ledger",
+  "description": "A responsive dashboard to add employees, log entries (amount and address) to a local store, filter items, and export records to Excel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

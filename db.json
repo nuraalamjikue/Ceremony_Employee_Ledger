@@ -1,0 +1,26 @@
+{
+  "employees": [
+    {
+      "id": "shmwepl",
+      "name": "fgh",
+      "address": "fgh",
+      "createdAt": "2026-05-26T00:36:35.618Z"
+    },
+    {
+      "id": "11pybr9",
+      "name": "jikue",
+      "address": "fgh",
+      "createdAt": "2026-05-26T00:36:52.306Z"
+    }
+  ],
+  "entries": [
+    {
+      "id": "m1k9q27",
+      "name": "jikue",
+      "amount": 1,
+      "address": "fgh",
+      "date": "May 26, 2026, 06:50 AM"
+    }
+  ],
+  "lastUpdated": "2026-05-26T00:50:14.195Z"
+}
