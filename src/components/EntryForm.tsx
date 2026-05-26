@@ -40,8 +40,11 @@ export default function EntryForm({
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isEmployeeStatusModalOpen, setIsEmployeeStatusModalOpen] =
+    useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Close search dropdown on click outside
   useEffect(() => {
@@ -59,6 +62,24 @@ export default function EntryForm({
     };
   }, []);
 
+  // Close employee status modal on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setIsEmployeeStatusModalOpen(false);
+      }
+    }
+    if (isEmployeeStatusModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isEmployeeStatusModalOpen]);
+
   // Sync selected employee's default address when selected
   useEffect(() => {
     if (selectedEmployee) {
@@ -69,6 +90,13 @@ export default function EntryForm({
     setSuccessMsg(null);
     setErrorMsg(null);
   }, [selectedEmployee]);
+
+  // Helper function to check if employee has an entry
+  const hasEntry = (employeeName: string): boolean => {
+    return entries.some(
+      (entry) => entry.name.toLowerCase() === employeeName.toLowerCase(),
+    );
+  };
 
   // Filter employees matching the query
   const filteredEmployees = employees.filter((employee) =>
@@ -183,9 +211,13 @@ export default function EntryForm({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200/40 rounded-lg px-2.5 py-1.5 select-none leading-none">
+            <button
+              type="button"
+              onClick={() => setIsEmployeeStatusModalOpen(true)}
+              className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200/40 rounded-lg px-2.5 py-1.5 select-none leading-none hover:bg-slate-200 hover:text-slate-700 transition-all cursor-pointer"
+            >
               {employees.length} Staff
-            </div>
+            </button>
           </div>
         </div>
 
@@ -495,6 +527,119 @@ export default function EntryForm({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Employee Status Modal */}
+      <AnimatePresence>
+        {isEmployeeStatusModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              ref={modalRef}
+              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xl max-w-md w-full max-h-[70vh] overflow-y-auto custom-scrollbar"
+            >
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+                <h3 className="text-lg font-bold text-slate-900">
+                  Employee Status
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsEmployeeStatusModalOpen(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 transition-all"
+                >
+                  <X size={18} className="text-slate-500" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {employees.length === 0 ? (
+                  <p className="text-center text-xs text-slate-500 py-8">
+                    No employees registered yet
+                  </p>
+                ) : (
+                  employees.map((emp) => {
+                    const hasEntryStatus = hasEntry(emp.name);
+                    return (
+                      <div
+                        key={emp.id}
+                        className="flex items-center justify-between p-3 rounded-lg border border-slate-200/60 hover:bg-slate-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <div
+                            className={`p-2 rounded-lg ${
+                              hasEntryStatus ? "bg-emerald-100" : "bg-slate-100"
+                            }`}
+                          >
+                            <User
+                              size={14}
+                              className={
+                                hasEntryStatus
+                                  ? "text-emerald-700"
+                                  : "text-slate-500"
+                              }
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-slate-900">
+                              {emp.name}
+                            </p>
+                            <p className="text-[10px] text-slate-500">
+                              {emp.address}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {hasEntryStatus ? (
+                            <div className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200/60 rounded-lg">
+                              <Check
+                                size={12}
+                                className="text-emerald-700 font-bold"
+                              />
+                              <span className="text-[10px] font-bold text-emerald-700">
+                                Recorded
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg">
+                              <span className="text-[10px] font-bold text-slate-500">
+                                Pending
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200/40">
+                    <p className="font-bold text-emerald-900">
+                      {employees.filter((e) => hasEntry(e.name)).length}
+                    </p>
+                    <p className="text-emerald-700 text-[10px]">Recorded</p>
+                  </div>
+                  <div className="p-2 bg-slate-50 rounded-lg border border-slate-200/40">
+                    <p className="font-bold text-slate-900">
+                      {employees.filter((e) => !hasEntry(e.name)).length}
+                    </p>
+                    <p className="text-slate-500 text-[10px]">Pending</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
